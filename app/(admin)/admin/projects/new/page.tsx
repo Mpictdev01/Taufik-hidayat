@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 export default function NewProjectPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0); // 0-100%
     const [activeTab, setActiveTab] = useState('basic'); // basic, details, content
     
     // Form States
@@ -16,6 +17,7 @@ export default function NewProjectPage() {
     const [description, setDescription] = useState('');
     const [techStack, setTechStack] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
     
     // Details
     const [client, setClient] = useState('');
@@ -34,11 +36,19 @@ export default function NewProjectPage() {
         setLoading(true);
 
         try {
-            // 1. Upload Image
+            let totalFiles = (imageFile ? 1 : 0) + galleryFiles.length;
+            let uploadedCount = 0;
+
+            const updateProgress = () => {
+                uploadedCount++;
+                setUploadProgress(Math.round((uploadedCount / totalFiles) * 100));
+            };
+
+            // 1. Upload Cover Image
             let imageUrl = '';
             if (imageFile) {
                 const fileExt = imageFile.name.split('.').pop();
-                const fileName = `${Math.random()}.${fileExt}`;
+                const fileName = `cover-${Math.random()}.${fileExt}`;
                 const { error: uploadError } = await supabase.storage
                     .from('project-images')
                     .upload(`${fileName}`, imageFile);
@@ -50,9 +60,28 @@ export default function NewProjectPage() {
                     .getPublicUrl(`${fileName}`);
                 
                 imageUrl = publicUrl;
+                updateProgress();
             }
 
-            // 2. Insert Data
+            // 2. Upload Gallery Images
+            let finalGalleryUrls: string[] = [];
+            for (const file of galleryFiles) {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `gallery-${Math.random()}.${fileExt}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('project-images')
+                    .upload(`${fileName}`, file);
+                
+                if (!uploadError) {
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('project-images')
+                        .getPublicUrl(`${fileName}`);
+                    finalGalleryUrls.push(publicUrl);
+                }
+                updateProgress();
+            }
+
+            // 3. Insert Data
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
 
@@ -72,7 +101,8 @@ export default function NewProjectPage() {
                     repo_url: repoUrl,
                     overview,
                     challenge,
-                    solution
+                    solution,
+                    gallery_urls: finalGalleryUrls
                 });
             
             if (insertError) throw insertError;
@@ -83,6 +113,7 @@ export default function NewProjectPage() {
             alert(`Error: ${error.message}`);
         } finally {
             setLoading(false);
+            setUploadProgress(0);
         }
     };
 
@@ -165,13 +196,43 @@ export default function NewProjectPage() {
                                     placeholder="React, Tailwind, Node.js"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cover Image</label>
-                                <input 
-                                    type="file" 
-                                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30"
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cover Image (Main)</label>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Gallery Images (Max 6)</label>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        multiple // Enable multiple upload
+                                        onChange={(e) => {
+                                            const files = Array.from(e.target.files || []);
+                                            if (files.length > 6) {
+                                                alert("Maksimal 6 gambar diperbolehkan.");
+                                                setGalleryFiles(files.slice(0, 6)); // limit to 6
+                                            } else {
+                                                setGalleryFiles(files);
+                                            }
+                                        }}
+                                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-white hover:file:bg-primary/50"
+                                    />
+                                    {galleryFiles.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-3">
+                                            {galleryFiles.map((f, i) => (
+                                                <div key={i} className="text-[10px] bg-white/10 px-2 py-1 rounded border border-white/20 truncate max-w-[120px]">
+                                                    {f.name}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -288,10 +349,18 @@ export default function NewProjectPage() {
                             <button 
                                 type="submit" 
                                 disabled={loading}
-                                className="px-6 py-3 bg-primary text-background-dark font-bold rounded-xl hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2"
-                            >
-                                {loading ? 'Saving...' : 'Create Project'}
-                                {!loading && <span className="material-symbols-outlined text-[18px]">check</span>}
+                                className="relative px-6 py-3 bg-primary text-background-dark font-bold rounded-xl hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2 overflow-hidden"
+                            >   
+                                {loading && (
+                                    <div 
+                                        className="absolute left-0 top-0 bottom-0 bg-white/30 transition-all duration-300 pointer-events-none" 
+                                        style={{ width: `${uploadProgress}%` }}
+                                    ></div>
+                                )}
+                                <span className="relative z-10 flex items-center gap-2">
+                                    {loading ? `Uploading... ${uploadProgress}%` : 'Create Project'}
+                                    {!loading && <span className="material-symbols-outlined text-[18px]">check</span>}
+                                </span>
                             </button>
                         )}
                     </div>

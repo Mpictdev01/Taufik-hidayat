@@ -8,7 +8,7 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState({
         projects: 0,
         tech: 0,
-        views: 12543, // Mock for now as we don't track views
+        views: 0,
     });
     const [loading, setLoading] = useState(true);
 
@@ -16,11 +16,13 @@ export default function AdminDashboard() {
         const fetchStats = async () => {
             const { count: projectCount } = await supabase.from('projects').select('*', { count: 'exact', head: true });
             const { count: techCount } = await supabase.from('tech_stacks').select('*', { count: 'exact', head: true });
+            const { count: viewCount } = await supabase.from('page_views').select('*', { count: 'exact', head: true });
             
             setStats(prev => ({
                 ...prev,
                 projects: projectCount || 0,
-                tech: techCount || 0
+                tech: techCount || 0,
+                views: viewCount || 0
             }));
             setLoading(false);
         };
@@ -54,9 +56,9 @@ export default function AdminDashboard() {
         />
         <StatCard 
             title="Total Views" 
-            value={stats.views.toLocaleString()} 
+            value={loading ? '...' : stats.views.toLocaleString()} 
             icon="visibility" 
-            trend="+12% vs last week" 
+            trend="Live Visitors" 
             color="text-emerald-400"
             bg="bg-emerald-500/10"
         />

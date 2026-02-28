@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import ProjectCarousel from "@/components/ProjectCarousel";
 
 // Disable caching for this page so it updates instantly
 export const revalidate = 0;
@@ -20,6 +21,9 @@ async function getData() {
 }
 
 export default async function Home() {
+    // 1. Log the view (fire and forget, don't block the rest)
+    supabase.from('page_views').insert([{ page_url: '/' }]).then();
+
     const { profile, techs, projects } = await getData();
 
     // Defaults in case DB is empty
@@ -80,20 +84,27 @@ export default async function Home() {
 								{description}
 							</p>
 							<div className="flex gap-3 mt-4">
-								<Link
-									href="#"
-									className="p-2 rounded-lg bg-white/10 hover:bg-white/20 hover:text-primary transition-colors text-white">
-									<span className="material-symbols-outlined text-[20px]">
-										mail
-									</span>
-								</Link>
-								<Link
-									href="#"
-									className="p-2 rounded-lg bg-white/10 hover:bg-white/20 hover:text-primary transition-colors text-white">
-									<span className="material-symbols-outlined text-[20px]">
-										share
-									</span>
-								</Link>
+								{profile.email && (
+									<Link
+										href={`mailto:${profile.email}`}
+										className="p-2 rounded-lg bg-white/10 hover:bg-white/20 hover:text-primary transition-colors text-white"
+										title="Email Me">
+										<span className="material-symbols-outlined text-[20px]">
+											mail
+										</span>
+									</Link>
+								)}
+								{profile.social_links?.github && (
+									<Link
+										href={profile.social_links.github}
+										target="_blank"
+										className="p-2 rounded-lg bg-white/10 hover:bg-white/20 hover:text-primary transition-colors text-white"
+										title="GitHub">
+										<span className="material-symbols-outlined text-[20px]">
+											code
+										</span>
+									</Link>
+								)}
 							</div>
 						</div>
 						<div className="absolute inset-0 border-2 border-primary/0 group-hover:border-primary/50 rounded-2xl transition-all duration-300 pointer-events-none z-30"></div>
@@ -217,9 +228,9 @@ export default async function Home() {
 									dataset
 								</span>
 							</div>
-							<span className="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors cursor-pointer text-[20px]">
+							<a href={profile.social_links?.github || '#'} target="_blank" className="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors cursor-pointer text-[20px]">
 								open_in_new
-							</span>
+							</a>
 						</div>
 						<div className="space-y-2 mt-4">
 							<div className="text-3xl font-black text-white">532</div>
@@ -236,75 +247,8 @@ export default async function Home() {
 						</div>
 					</div>
 
-					{/* Featured Projects Carousel */}
-					<div className="col-span-1 md:col-span-2 lg:col-span-4 rounded-2xl p-6 md:p-8 border border-glass-border bg-glass-bg backdrop-blur-md flex flex-col gap-6 relative overflow-hidden">
-						<div className="flex justify-between items-center z-10 relative">
-							<div>
-								<h3 className="text-xl font-bold text-white">
-									Featured Projects
-								</h3>
-								<p className="text-sm text-slate-400 mt-1">
-									Recent works and experiments
-								</p>
-							</div>
-                            {/* Nav buttons could be hooked up if we had client side carousel logic, leaving visual */}
-							<div className="flex gap-2">
-								<button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
-									<span className="material-symbols-outlined text-[18px]">
-										chevron_left
-									</span>
-								</button>
-								<button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
-									<span className="material-symbols-outlined text-[18px]">
-										chevron_right
-									</span>
-								</button>
-							</div>
-						</div>
-						<div className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 z-10 relative snap-x snap-mandatory">
-                            
-                            {/* Dynamic Projects */}
-                            {projects.length > 0 ? projects.map((project: any) => (
-                                <Link
-                                    key={project.id}
-                                    href={`/projects/${project.id}`} // Or logic for detail
-                                    className="min-w-[280px] md:min-w-[340px] snap-center rounded-xl bg-background-dark border border-white/5 overflow-hidden group/card hover:border-primary/40 transition-all block">
-                                    <div
-                                        className="h-40 bg-cover bg-center relative"
-                                        style={{
-                                            backgroundImage: project.image_url ? `url('${project.image_url}')` : 'none',
-                                            backgroundColor: '#111'
-                                        }}>
-                                        <div className="absolute inset-0 bg-black/40 group-hover/card:bg-black/20 transition-all"></div>
-                                    </div>
-                                    <div className="p-5">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h4 className="font-bold text-lg text-white group-hover/card:text-primary transition-colors">
-                                                {project.title}
-                                            </h4>
-                                            <span className="material-symbols-outlined text-[18px] text-slate-500">
-                                                arrow_outward
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-slate-400 mb-4 line-clamp-2">
-                                            {project.description}
-                                        </p>
-                                        <div className="flex gap-2 flex-wrap">
-                                            {project.tech_stack?.slice(0,3).map((stack:string, i:number) => (
-                                                <span key={i} className="text-[10px] font-mono bg-white/5 px-2 py-1 rounded text-slate-300">
-                                                    {stack}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </Link>
-                            )) : (
-                                <div className="text-slate-500 text-sm p-4">No projects added yet from admin.</div>
-                            )}
-
-						</div>
-						<div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-glass-bg to-transparent pointer-events-none z-0 hidden md:block"></div>
-					</div>
+					{/* Featured Projects Carousel Component */}
+					<ProjectCarousel projects={projects} />
 				</div>
 
 			</div>

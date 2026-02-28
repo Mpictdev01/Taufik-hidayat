@@ -11,6 +11,7 @@ export default function EditProjectPage() {
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0); // 0-100%
     const [activeTab, setActiveTab] = useState('basic'); // basic, details, content
     
     // Form States
@@ -19,6 +20,8 @@ export default function EditProjectPage() {
     const [techStack, setTechStack] = useState('');
     const [imageUrl, setImageUrl] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+    const [newGalleryFiles, setNewGalleryFiles] = useState<File[]>([]);
     
     // Details
     const [client, setClient] = useState('');
@@ -59,6 +62,7 @@ export default function EditProjectPage() {
             setOverview(project.overview || '');
             setChallenge(project.challenge || '');
             setSolution(project.solution || '');
+            setGalleryUrls(project.gallery_urls || []);
 
             setLoading(false);
         };
@@ -71,11 +75,19 @@ export default function EditProjectPage() {
         setSaving(true);
 
         try {
+            let totalFiles = (imageFile ? 1 : 0) + newGalleryFiles.length;
+            let uploadedCount = 0;
+
+            const updateProgress = () => {
+                uploadedCount++;
+                setUploadProgress(Math.round((uploadedCount / totalFiles) * 100));
+            };
+
             // 1. Upload Image if changed
             let finalImageUrl = imageUrl;
             if (imageFile) {
                 const fileExt = imageFile.name.split('.').pop();
-                const fileName = `${Math.random()}.${fileExt}`;
+                const fileName = `cover-${Math.random()}.${fileExt}`;
                 const { error: uploadError } = await supabase.storage
                     .from('project-images')
                     .upload(`${fileName}`, imageFile);
@@ -87,9 +99,28 @@ export default function EditProjectPage() {
                     .getPublicUrl(`${fileName}`);
                 
                 finalImageUrl = publicUrl;
+                updateProgress();
             }
 
-            // 2. Update Data
+            // 2. Upload New Gallery Images
+            let finalGalleryUrls = [...galleryUrls];
+            for (const file of newGalleryFiles) {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `gallery-${Math.random()}.${fileExt}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('project-images')
+                    .upload(`${fileName}`, file);
+                
+                if (!uploadError) {
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('project-images')
+                        .getPublicUrl(`${fileName}`);
+                    finalGalleryUrls.push(publicUrl);
+                }
+                updateProgress();
+            }
+
+            // 3. Update Data
             const { error: updateError } = await supabase
                 .from('projects')
                 .update({
@@ -104,7 +135,8 @@ export default function EditProjectPage() {
                     repo_url: repoUrl,
                     overview,
                     challenge,
-                    solution
+                    solution,
+                    gallery_urls: finalGalleryUrls
                 })
                 .eq('id', id);
             
@@ -117,7 +149,12 @@ export default function EditProjectPage() {
             alert(`Error: ${error.message}`);
         } finally {
             setSaving(false);
+            setUploadProgress(0);
         }
+    };
+
+    const removeGalleryImage = (indexToRemove: number) => {
+        setGalleryUrls(prev => prev.filter((_, index) => index !== indexToRemove));
     };
 
     if (loading) return <div className="p-10 text-center text-slate-500">Loading project data...</div>;
@@ -198,20 +235,73 @@ export default function EditProjectPage() {
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary/50 transition-colors"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cover Image</label>
-                                {imageUrl && (
-                                    <div className="mb-4 w-32 h-20 rounded-lg overflow-hidden border border-white/10">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={imageUrl} alt="Current" className="w-full h-full object-cover" />
-                                    </div>
-                                )}
-                                <input 
-                                    type="file" 
-                                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30"
-                                />
-                                <p className="text-[10px] text-slate-500 mt-1">Upload new file to replace current image.</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cover Image</label>
+                                    {imageUrl && (
+                                        <div className="mb-4 w-32 h-20 rounded-lg overflow-hidden border border-white/10 relative group">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={imageUrl} alt="Current" className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30"
+                                    />
+                                    <p className="text-[10px] text-slate-500 mt-1">Upload new file to replace current cover.</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex justify-between">
+                                        Gallery Images 
+                                        <span>({galleryUrls.length + newGalleryFiles.length} / 6)</span>
+                                    </label>
+                                    
+                                    {/* Existing Gallery Images */}
+                                    {galleryUrls.length > 0 && (
+                                        <div className="flex flex-wrap gap-3 mb-4">
+                                            {galleryUrls.map((url, i) => (
+                                                <div key={i} className="relative w-16 h-16 rounded overflow-hidden border border-white/20 group">
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img src={url} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => removeGalleryImage(i)}
+                                                        className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">delete</span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Upload New Gallery Images */}
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        multiple 
+                                        onChange={(e) => {
+                                            const files = Array.from(e.target.files || []);
+                                            const availableSlots = 6 - galleryUrls.length;
+                                            
+                                            if (files.length > availableSlots) {
+                                                alert(`Hanya ${availableSlots} slot tersisa untuk galeri.`);
+                                                setNewGalleryFiles(files.slice(0, availableSlots));
+                                            } else {
+                                                setNewGalleryFiles(files);
+                                            }
+                                        }}
+                                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-white hover:file:bg-primary/50"
+                                    />
+                                    {newGalleryFiles.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-3 text-[10px] text-primary">
+                                            +{newGalleryFiles.length} gambar baru akan diunggah
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -311,10 +401,18 @@ export default function EditProjectPage() {
                         <button 
                             type="submit" 
                             disabled={saving}
-                            className="px-6 py-3 bg-primary text-background-dark font-bold rounded-xl hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2"
+                            className="relative px-6 py-3 bg-primary text-background-dark font-bold rounded-xl hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2 overflow-hidden"
                         >
-                            {saving ? 'Saving...' : 'Save Changes'}
-                            {!saving && <span className="material-symbols-outlined text-[18px]">check</span>}
+                            {saving && uploadProgress > 0 && (
+                                <div 
+                                    className="absolute left-0 top-0 bottom-0 bg-white/30 transition-all duration-300 pointer-events-none" 
+                                    style={{ width: `${uploadProgress}%` }}
+                                ></div>
+                            )}
+                            <span className="relative z-10 flex items-center gap-2">
+                                {saving ? `Saving... ${uploadProgress > 0 ? uploadProgress + '%' : ''}` : 'Save Changes'}
+                                {!saving && <span className="material-symbols-outlined text-[18px]">check</span>}
+                            </span>
                         </button>
                     </div>
 

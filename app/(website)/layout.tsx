@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SmoothScrolling from "@/components/SmoothScrolling";
 
 export const metadata: Metadata = {
 	title: "Taufik Hidayat - Portfolio",
@@ -32,9 +33,11 @@ export default function RootLayout({
 				/>
 			</head>
 			<body className="bg-background-dark text-white font-display antialiased overflow-x-hidden selection:bg-primary/30 selection:text-primary-foreground min-h-screen flex flex-col">
-				<Navbar />
-				{children}
-				<Footer />
+				<SmoothScrolling>
+					<Navbar />
+					{children}
+					<Footer />
+				</SmoothScrolling>
 			</body>
 		</html>
 	);

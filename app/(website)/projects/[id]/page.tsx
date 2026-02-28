@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
+import ProjectSlider from '@/components/ProjectSlider';
 
 export const revalidate = 0;
 
@@ -28,6 +29,8 @@ export default async function ProjectDetail({ params }: any) {
     const prevId = currentIndex > 0 ? allProjects?.[currentIndex - 1].id : null;
     const nextId = currentIndex < (allProjects?.length || 0) - 1 ? allProjects?.[currentIndex + 1].id : null;
 
+    // Combine Cover Image + Gallery Images
+    const allImages = [project.image_url, ...(project.gallery_urls || [])].filter(Boolean);
 
   return (
     <div className="flex-1 max-w-[1440px] mx-auto w-full px-6 lg:px-12 py-12 lg:py-20 lg:pt-32">
@@ -91,16 +94,8 @@ export default async function ProjectDetail({ params }: any) {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col gap-20 lg:pt-2">
-                {/* Hero Image */}
-                <div className="relative group w-full rounded-2xl overflow-hidden shadow-neon-strong ring-1 ring-primary/20">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                        src={project.image_url || "https://placehold.co/1200x800/111/444?text=No+Image"}
-                        alt="Project Dashboard Hero"
-                        className="w-full h-auto object-cover transform group-hover:scale-[1.02] transition-transform duration-1000"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background-dark/40 to-transparent pointer-events-none"></div>
-                </div>
+                {/* Image Slider */}
+                <ProjectSlider images={allImages} />
 
                 {/* Overview */}
                 <section className="max-w-3xl">
