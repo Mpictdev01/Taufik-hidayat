@@ -4,6 +4,9 @@ import "../globals.css";
 export const metadata: Metadata = {
 	title: "Admin Panel | Taufik Hidayat",
 	description: "Portfolio Admin Console",
+	icons: {
+		icon: "/favicon.ico",
+	},
 };
 
 export default function AdminRootLayout({
@@ -29,6 +32,7 @@ export default function AdminRootLayout({
 					href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
 					rel="stylesheet"
 				/>
+				<link rel="icon" href="/favicon.ico" sizes="any" />
 			</head>
 			<body className="bg-background-dark text-white font-display antialiased overflow-x-hidden selection:bg-primary/30 selection:text-primary-foreground min-h-screen">
 				{children}
