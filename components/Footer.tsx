@@ -8,19 +8,24 @@ export default async function Footer() {
     const links = profile?.social_links || { twitter: '#', linkedin: '#', github: '#', email: '#' };
 
     return (
-        <footer className="mt-20 pt-10 border-t border-white/5 bg-background-dark/50 backdrop-blur-sm pb-10">
-            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-                <div className="flex flex-col items-center md:items-start gap-2">
-                    <p className="text-slate-500 text-sm">© 2024 Taufik Hidayat. Built with <span className="text-primary/60">Modern Stack</span>.</p>
-                     <Link href="/admin/login" className="opacity-0 hover:opacity-100 transition-opacity text-[10px] text-slate-700">Thinking about Admin?</Link>
-                </div>
+        <footer className="mt-20 pt-8 border-t border-white/5 pb-8">
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p className="text-slate-500 text-sm text-center md:text-left">
+                    © {new Date().getFullYear()} Taufik Hidayat. All rights reserved.
+                </p>
                 
-                <div className="flex gap-8 font-mono text-xs tracking-widest uppercase">
-                    {links.twitter && <a href={links.twitter} target="_blank" className="text-slate-400 hover:text-primary transition-colors">Twitter</a>}
-                    {links.linkedin && <a href={links.linkedin} target="_blank" className="text-slate-400 hover:text-primary transition-colors">LinkedIn</a>}
-                    {links.github && <a href={links.github} target="_blank" className="text-slate-400 hover:text-primary transition-colors">GitHub</a>}
-                    {links.email && <a href={`mailto:${links.email}`} className="text-slate-400 hover:text-primary transition-colors">Email</a>}
+                <div className="flex items-center gap-6 font-mono text-xs tracking-widest uppercase">
+                    {links.github && <a href={links.github} target="_blank" className="text-slate-500 hover:text-white transition-colors">GitHub</a>}
+                    {links.linkedin && <a href={links.linkedin} target="_blank" className="text-slate-500 hover:text-white transition-colors">LinkedIn</a>}
+                    {links.twitter && <a href={links.twitter} target="_blank" className="text-slate-500 hover:text-white transition-colors">Twitter</a>}
+                    {links.email && <a href={`mailto:${links.email}`} className="text-slate-500 hover:text-white transition-colors">Email</a>}
                 </div>
+            </div>
+
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 mt-4">
+                <Link href="/admin/login" className="opacity-0 hover:opacity-100 transition-opacity text-[10px] text-slate-700">
+                    Admin
+                </Link>
             </div>
         </footer>
     );
