@@ -16,11 +16,18 @@
 }
 
 @layer base {
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
+  }
   html {
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background-dark text-slate-100 font-display antialiased overflow-x-hidden selection:bg-primary/30 selection:text-primary;
+    @apply bg-background-dark text-slate-100 font-display antialiased selection:bg-primary/30 selection:text-primary;
+    width: 100%;
+    min-height: 100vh;
   }
 }
 

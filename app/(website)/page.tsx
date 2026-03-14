@@ -50,7 +50,7 @@ export default async function Home() {
     const heroImage = profile.hero_image_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuBXnx2Tx10nWun9jgtUQimDVPjRiiFNSH2qSVplo5mUO-ousoWq_dRnOdBUijcWL8Rrm5BFZp7EMITDazdJRuWKqzpwp-Qr-UUWZOHXZ6GT_IRlFE_i73p5cSNxF6v8D00YrHVZ4QGhNvmhFAcMHf4E2w3R7A-wKnfRa_1Fgerspwkb99vV5JHKUC1RITe0zoE_eU-RoKljNTjvbfgZ-fM8RZszcBos5hOf83cdH7FSjSn4zjfPclUGij70z_C0DoC6p9e8mInqqblb";
 
 	return (
-		<main className="relative z-10 flex-grow pb-12 px-4 sm:px-6">
+		<main className="relative z-10 flex-grow pb-12 px-4 sm:px-6 overflow-x-hidden">
 			<RotatingHero heroImage={heroImage} />
 			<AnimatedSection id="scoping">
 				<ProjectScopingForm />

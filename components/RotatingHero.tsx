@@ -24,7 +24,7 @@ export default function RotatingHero({ heroImage }: RotatingHeroProps) {
 	}, []);
 
 	return (
-		<section className="relative h-screen w-full flex items-center justify-center px-4 md:px-8">
+		<section className="relative h-screen w-full flex items-center justify-center px-4 md:px-8 overflow-hidden">
 			<div className="z-10 text-center max-w-5xl flex flex-col items-center gap-4">
 				<div className="min-h-[100px] md:min-h-[120px] lg:min-h-[140px] flex items-center justify-center">
 					<AnimatePresence mode="wait">
