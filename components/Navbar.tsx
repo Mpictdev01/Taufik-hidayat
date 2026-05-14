@@ -64,7 +64,7 @@ export default function Navbar() {
 		open: (i: number) => ({
 			x: 0,
 			opacity: 1,
-			transition: { delay: 0.15 + i * 0.07, duration: 0.4, ease: "easeOut" },
+			transition: { delay: 0.15 + i * 0.07, duration: 0.4, ease: "easeOut" as const },
 		}),
 	};
 
@@ -73,7 +73,7 @@ export default function Navbar() {
 		open: {
 			y: 0,
 			opacity: 1,
-			transition: { delay: 0.4, duration: 0.5, ease: "easeOut" },
+			transition: { delay: 0.4, duration: 0.5, ease: "easeOut" as const },
 		},
 	};
 
