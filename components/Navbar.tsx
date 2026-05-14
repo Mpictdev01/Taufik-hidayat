@@ -54,12 +54,12 @@ export default function Navbar() {
 
 					{/* Right Side: Hire Me & Mobile Toggle */}
 					<div className="flex items-center gap-3 md:gap-4">
-						<button className="hidden sm:flex group items-center justify-center overflow-hidden h-8 md:h-10 px-5 md:px-6 bg-blue-700 hover:bg-blue-800 transition-all text-white text-xs md:text-sm font-bold shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.4),0_4px_10px_rgba(29,78,216,0.5)] active:shadow-[inset_0_0_2px_rgba(0,0,0,0.5)] active:translate-y-0.5 rounded-full border border-blue-600/50">
+						<a href="https://wa.me/6285600133559" target="_blank" rel="noopener noreferrer" className="hidden sm:flex group items-center justify-center overflow-hidden h-8 md:h-10 px-5 md:px-6 bg-blue-700 hover:bg-blue-800 transition-all text-white text-xs md:text-sm font-bold shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.4),0_4px_10px_rgba(29,78,216,0.5)] active:shadow-[inset_0_0_2px_rgba(0,0,0,0.5)] active:translate-y-0.5 rounded-full border border-blue-600/50">
 							<span className="mr-2 drop-shadow-sm">Hire Me</span>
 							<span className="material-symbols-outlined text-[16px] md:text-[20px] group-hover:translate-x-1 transition-transform drop-shadow-sm">
 								arrow_forward
 							</span>
-						</button>
+						</a>
 
 						{/* Mobile Menu Button */}
 						<button

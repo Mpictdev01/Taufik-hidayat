@@ -5,7 +5,7 @@ export const revalidate = 0;
 
 export default async function Footer() {
     const { data: profile } = await supabase.from('profile_settings').select('social_links').single();
-    const links = profile?.social_links || { twitter: '#', linkedin: '#', github: '#', email: '#' };
+    const links = profile?.social_links || { twitter: '#', linkedin: 'https://www.linkedin.com/in/taufik-hidayat-094545292', github: 'https://github.com/Mpictdev01', email: '#' };
 
     return (
         <footer className="mt-20 pt-8 border-t border-white/5 pb-8">

@@ -85,7 +85,7 @@ export default function RotatingHero({ heroImage }: RotatingHeroProps) {
 					transition={{ delay: 1, duration: 0.5 }}
 					className="flex justify-center mt-4">
 					<a
-						href="https://github.com/taufikhidayat"
+						href="https://github.com/Mpictdev01"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="group w-12 hover:w-44 h-12 hover:bg-blue-600 relative bg-blue-700 rounded-full text-white duration-700 before:duration-700 font-bold flex justify-start gap-2 items-center p-2 pr-6 before:absolute before:-z-10 before:left-8 before:hover:left-40 before:w-6 before:h-6 before:bg-blue-700 before:hover:bg-blue-600 before:rotate-45 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.4),0_4px_10px_rgba(29,78,216,0.5)] border border-blue-600/50">
