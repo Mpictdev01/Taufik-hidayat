@@ -55,7 +55,7 @@ export default function Navbar() {
 		closed: { x: "100%" },
 		open: {
 			x: 0,
-			transition: { type: "spring", damping: 30, stiffness: 300 },
+			transition: { type: "spring" as const, damping: 30, stiffness: 300 },
 		},
 	};
 
